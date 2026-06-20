@@ -1,0 +1,58 @@
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+model Customer {
+  id        Int       @id @default(autoincrement())
+  phone     String    @unique
+  name      String
+  status    String    @default("AI_ACTIVE") // AI_ACTIVE, HUMAN_HANDOVER
+  tickets   Ticket[]
+  messages  Message[]
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+}
+
+model Message {
+  id         Int      @id @default(autoincrement())
+  body       String
+  direction  String   // INBOUND, OUTBOUND
+  sender     String   // CUSTOMER, AI, HUMAN
+  customerId Int
+  customer   Customer @relation(fields: [customerId], references: [id], onDelete: Cascade)
+  createdAt  DateTime @default(now())
+}
+
+model Ticket {
+  id          String   @id @default(uuid())
+  description String
+  status      String   @default("OPEN") // OPEN, IN_PROGRESS, RESOLVED
+  customerId  Int
+  customer    Customer @relation(fields: [customerId], references: [id], onDelete: Cascade)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+}
+
+model FAQ {
+  id        Int      @id @default(autoincrement())
+  question  String
+  answer    String
+  category  String?
+  createdAt DateTime @default(now())
+}
+
+model Order {
+  id          Int      @id @default(autoincrement())
+  orderNumber String   @unique
+  customerName String
+  email       String
+  status      String   // PENDING, PROCESSING, SHIPPED, DELIVERED, CANCELLED
+  items       String   // Text description of items in order
+  trackingUrl String?
+  createdAt   DateTime @default(now())
+}
